@@ -1,0 +1,1417 @@
+# 本项目为Spring的实战项目，来源为黑马程序员-瑞吉外卖实战项目
+# 项目地址：
+    http://yun.itheima.com/course/999.html?capid=1$hm 或
+    https://www.bilibili.com/video/BV13a411q753
+# 下载地址：
+    https://www.aliyundrive.com/s/PKtpcSVu9rZ
+# 创建于 2023/04/28
+
+
+2023/04/28
+- 新建项目根目录，为：F:\JAVA and C practice\springShiZhan_reggieTakeOut
+- 新建项目对应数据库：
+    CREATE database reggie CHARACTER SET utf8mb4;
+- 导入表结构（项目资料中已经给出，直接引用即可）
+    导入 db_reggie.sql  【注意！】此处sql文件所在路径必须为纯中文，否则将
+    导入失败
+- 导入表时发生报错：
+    （1）
+        ERROR 1406 (22001): Data too long for column 'detail' at row 1
+        ERROR 1406 (22001): Data too long for column 'label' at row 1
+    （3）
+        ERROR 1366 (HY000): Incorrect string value: '\xAE\xE5\x93\x81' for column 'name' at row 1
+        ERROR 1366 (HY000): Incorrect string value: '\xA4\x90' for column 'name' at row 1
+        ERROR 1366 (HY000): Incorrect string value: '\xA3\x9F' for column 'name' at row 1
+        ERROR 1366 (HY000): Incorrect string value: '\xAB\xA5\xE5\xA5\x97\xE9...' for column 'name' at row 1
+
+
+2023/05/04
+- 报错原因可能是新建数据库时字符集格式不正确，教程中给出的是“utf8mb4”，而网上给出的解决方案建议改为“utf8”
+- 删除原有数据库后新建，这次新建数据库命令改为：
+    create database reggie character set utf8;
+- 再次尝试导入数据库。
+- 还是存在这样的问题，建议不要从cmd导入，从mysql workbench导入。
+- 从workbench导入步骤：
+    新建数据库reggie，选择使用utf8mb4字符集；
+    建立成功后双击选择该数据库；
+    再选择对应的sql文件；
+    最后点击左上角的闪电执行导入。
+- 导入成功：
+    （选取一个表展示结果）
+    mysql> select * from category;
+    +---------------------+------+----------+------+---------------------+---------------------+-------------+-------------+
+    | id                  | type | name     | sort | create_time         | update_time         | create_user | update_user |
+    +---------------------+------+----------+------+---------------------+---------------------+-------------+-------------+
+    | 1397844263642378242 |    1 | 湘菜     |    1 | 2021-05-27 09:16:58 | 2021-07-15 20:25:23 |           1 |           1 |
+    | 1397844303408574465 |    1 | 川菜     |    2 | 2021-05-27 09:17:07 | 2021-06-02 14:27:22 |           1 |           1 |
+    | 1397844391040167938 |    1 | 粤菜     |    3 | 2021-05-27 09:17:28 | 2021-07-09 14:37:13 |           1 |           1 |
+    | 1413341197421846529 |    1 | 饮品     |   11 | 2021-07-09 11:36:15 | 2021-07-09 14:39:15 |           1 |           1 |
+    | 1413342269393674242 |    2 | 商务套餐 |    5 | 2021-07-09 11:40:30 | 2021-07-09 14:43:45 |           1 |           1 |
+    | 1413384954989060097 |    1 | 主食     |   12 | 2021-07-09 14:30:07 | 2021-07-09 14:39:19 |           1 |           1 |
+    | 1413386191767674881 |    2 | 儿童套餐 |    6 | 2021-07-09 14:35:02 | 2021-07-09 14:39:05 |           1 |           1 |
+    +---------------------+------+----------+------+---------------------+---------------------+-------------+-------------+
+    7 rows in set (0.00 sec)
+【结论：如果要导入sql格式的数据库文件，还是从workbench导入比较好】
+
+2023/05/06
+- 新建了名为reggie_take_out的maven项目，项目目录为：
+    F:\JAVA and C practice\springShiZhan_reggieTakeOut\reggie_take_out
+
+
+2023/05/07
+- 按照教程资料中的pom文件（文件地址 F:\JAVA and C practice\springShiZhan_reggieTakeOut\projectConfigFiles\pom.xml）
+    配置本项目钟的pom文件，配置内容包括继承项目parent、依赖dependencies和插件build
+- 将教程资料中的yaml文件放入resources文件夹下（直接使用）
+- 在项目路径 com.itheima 下新建包 reggie ，并在包中新建 ReggieApplication 启动类
+- 运行ReggieApplication 启动类，结果如下：（敏感信息已重新处理，如[root]、[user]表示该项目路径和用户）
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.4.5)
+
+2023-05-07 13:05:42.366  INFO 16492 --- [           main] com.itheima.reggie.ReggieApplication     : Starting ReggieApplication using Java 17.0.5 on DESKTOP-GL7CCDN with PID 16492 ([root]\target\classes started by [user] in [root]]\reggie_take_out)
+2023-05-07 13:05:42.371  INFO 16492 --- [           main] com.itheima.reggie.ReggieApplication     : No active profile set, falling back to default profiles: default
+2023-05-07 13:05:43.845  WARN 16492 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.itheima.reggie]' package. Please check your configuration.
+2023-05-07 13:05:44.978  INFO 16492 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2023-05-07 13:05:44.990  INFO 16492 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-05-07 13:05:44.990  INFO 16492 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.45]
+2023-05-07 13:05:45.068  INFO 16492 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-05-07 13:05:45.068  INFO 16492 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2552 ms
+2023-05-07 13:05:45.323  INFO 16492 --- [           main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+2023-05-07 13:05:45.520  INFO 16492 --- [           main] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+2023-05-07 13:05:46.011  INFO 16492 --- [           main] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+Logging initialized using 'class org.apache.ibatis.logging.stdout.StdOutImpl' adapter.
+Property 'mapperLocations' was not specified.
+ _ _   |_  _ _|_. ___ _ |    _
+| | |\/|_)(_| | |_\  |_)||_|_\
+     /               |
+                        3.4.2
+2023-05-07 13:05:46.414  INFO 16492 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-05-07 13:05:46.472  INFO 16492 --- [           main] com.itheima.reggie.ReggieApplication     : Started ReggieApplication in 7.626 seconds (JVM running for 20.225)
+2023-05-07 13:05:46.517  INFO 16492 --- [           main] com.itheima.reggie.ReggieApplication     : 项目启动成功！
+
+- 可以看到输出“项目启动成功！” 的字样，说明运行成功。
+
+
+2023/05/08
+- 将项目资料中的（路径为：
+F:\工作学习\课件和笔记\C-【重要】自学JAVA&Spring\黑马-SSM实战（吉瑞）\7、黑马程序员企业级瑞吉外卖项目\1 瑞吉外卖项目\资料\前端资源）
+    backend和front中的前端资源复制到项目的resources文件夹下
+- 这时启动项目（访问路径 http://localhost:8080/backend/index.html），会发生报错：
+    Whitelabel Error Page
+    This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+    Mon May 08 16:44:50 HKT 2023
+    There was an unexpected error (type=Not Found, status=404).
+
+    这是由于项目无法访问到resources/backend和/front文件夹下的静态资源（默认路径是 resources/static templates）。
+
+- 为了能够实现访问静态资源，在reggie目录下新建一个config包（之后所有的配置类都会放在这个包下），在此包中新建WebMvcConfig类，
+    用于重新配置静态资源映射（解决上面遇到的报错）。
+- 完善该配置类后再次启动项目，访问上述路径，成功显示对应页面。
+
+- 【实现用户登录】
+- 在目录下新建一个entity包，在其中导入 ./资料/实体 中的Employee类（自己抄一遍），建立员工实体信息。
+
+
+2023/05/10
+- 完成Employee员工类的建立。
+- 新建controller包、mapper包和service包，并在service中再建impl（实现类）包，现有的reggie包下的结构（忽略其中的类）为：
+    reggie
+        +-config
+        +-controller
+        +-eneity
+        +-mapper
+        +-service
+            +-impl
+
+- 在mapper包中新建EmployeeMapper接口（interface）；
+  在service包中新建EmployeeService接口，并在service.impl包中建立对应的EmployeeServiceImpl实现类；
+  在controller包中新建EmployeeController类。
+
+- 再新建一个common包，将 ./资料/服务端返回结果 中的R.Class导入（自己抄一遍），这个R.Class用于将服务端
+    相应的结果包装后返回给前端，其实类似springboot-login-demo这个项目中的Result包中的result类，都是同样的功能。
+
+- 在EmployeeController类中创建一个登录login方法
+- 在EmployeeController中设置断点（第53行，String password处），并以调试方式启动程序，为了避免调试时间过长导致前端报错time_out，在request.js中将
+    timeout = 10000改为 1000000（测试完成后已改回 - 2023/05/10）
+
+- 输入正确的账号密码，测试能否成功返回结果？测试结果成功，返回结果：
+    userInfo:{id: 1, username: "admin", name: "管理员", password: "e10adc3949ba59abbe56e057f20f883e",…}
+        createTime: [2021, 5, 6, 17, 20, 7]
+        createUser:1
+        id:1
+        idNumber:"110101199001010047"
+        name:"管理员"
+        password:"e10adc3949ba59abbe56e057f20f883e"
+        phone:"13812312312"
+        sex:"1"
+        status:1
+        updateTime:[2021, 5, 10, 2, 24, 9]
+        updateUser:1
+        username:"admin"
+
+（- 在调试时遇到了一个问题：一步一步进行调试总会跳入其他java类（怀疑是源代码）中
+    解决：
+        在 设置 - 构建，执行，部署 - 调试器 - 步进 中将“不要进入类”下的java和javax取消勾选
+        按f8（而不是f7！！！）执行debug
+）
+
+
+- 【实现后台退出】
+- 在EmployeeController类中创建一个退出logout方法，实现index页面的退出功能
+- 完成后测试，成功退出
+
+
+2023/05/11
+- 【完善登录功能】
+    问题分析：
+        直接输出主页地址（./index.html）即可访问，即使不登陆
+        如何判断用户是否登录，并拦截未登录的用户？
+    方法：
+        使用拦截器filter，拦截非登录用户访问主页，并将其自动转入登录页面（./login.html）
+
+- 在reggie目录下新建一个filter包，并新建一个LoginCheckFilter类，用于检查用户登录并进行过滤
+- 上述过滤器类完成后，在启动类中加入一行注解：@ServletComponentScan，用于扫描过滤器类中的webfilter注解
+- 测试拦截结果，成功。当未登录直接访问 ./index.html时，会强制返回到登录页面，同时控制台提示：
+    2023-05-11 11:33:52.168  INFO 16812 --- [nio-8080-exec-5] c.i.reggie.filter.LoginCheckFilter       : 拦截到请求：/employee/page
+    2023-05-11 11:33:52.168  INFO 16812 --- [nio-8080-exec-5] c.i.reggie.filter.LoginCheckFilter       : 用户未登录
+
+    而正常登陆后控制台提示：
+    2023-05-11 11:35:28.852  INFO 16812 --- [nio-8080-exec-9] c.i.reggie.filter.LoginCheckFilter       : 用户已登录，id为：1
+    2023-05-11 11:35:28.852  WARN 16812 --- [nio-8080-exec-9] o.s.web.servlet.PageNotFound             : No mapping for GET /employee/page
+
+    说明拦截器功能有效
+
+- 【实现新增员工功能】
+- 在EmployeeController类中新增一个save方法，用于实现新增员工功能
+- 完成后进行测试，新建一个名为“张三”的用户，信息如下：
+    [
+        username:zhangsan
+        name:张三
+        sex:男
+        phoneNumber:13212345678
+        idNumber:111222333444555666
+    ]
+
+    启动项目后，在新增员工页面输入信息，并点击保存，控制台返回结果：
+    2023-05-11 15:05:40.415  INFO 14856 --- [nio-8080-exec-1] c.i.r.controller.EmployeeController      : 新增员工，员工信息：Employee(id=null, username=zhangsan, name=张三, password=null, phone=13212345678, sex=1, idNumber=111222333444555666, status=null, createTime=null, updateTime=null, createUser=null, updateUser=null)
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@c6e8135] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@6fea7d5] will not be managed by Spring
+    ==>  Preparing: INSERT INTO employee ( id, username, name, password, phone, sex, id_number, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1656556159546449922(Long), zhangsan(String), 张三(String), e10adc3949ba59abbe56e057f20f883e(String), 13212345678(String), 1(String), 111222333444555666(String), 2023-05-11T15:05:40.415026800(LocalDateTime), 2023-05-11T15:05:40.415026800(LocalDateTime), 1(Long), 1(Long)
+    <==    Updates: 1
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@c6e8135]
+
+    打开数据库，发现已经新增“张三”的个人信息：
+    '1656556159546449922', '张三', 'zhangsan', 'e10adc3949ba59abbe56e057f20f883e', '13212345678', '1', '111222333444555666', '1', '2023-05-11 15:05:40', '2023-05-11 15:05:40', '1', '1'
+
+    说明该功能有效
+
+- 【完善新增员工功能】
+- 新增员工功能还存在一些问题：当新增员工输入已存在的员工信息时（如相同的username），由于employee表存在的UNIQUE唯一性约束，会抛出异常。
+    所以需要进行异常捕获。
+    由于在controller中加入try...catch...比较繁琐复杂，且不利于模块化（可能后续需要修改捕获，或者新增捕获，都比较麻烦），所考虑进行全局
+    捕获
+- 在common包中新建GlobalExceptionHandler类，用于全局的异常捕获的处理
+- 完成后进行测试，输入相同username（如zhangsan，已存在的用户名）后，debug会进入用户名已存在的逻辑判断语句，并返回报错提示，
+    前端页面会弹出提示，证明该拦截器有效
+
+- 【实现员工信息分页查询功能】
+    代码执行过程分析：
+    1.页面发送ajax请求，将分页参数（page、pageSize、name）提交到服务端
+    2.服务端Controller接收页面提交的数据并调用Service查询数据
+    3.Service调用Mapper操作数据库，查询分页数据
+    4.Controller将查询到的分页数据响应给页面
+    5.页面接受到分页数据并通过ElementUI的Table组件展示到页面上
+
+- 由于前端代码已经完成，所以现在从上述第二步开始创建代码
+- 在config包中新建一个MybatisPlusConfig，用于配置mybatis中相应的组件，方便controller调用
+- 在EmployedController类中新建一个员工信息分页查询的page方法
+
+
+2023/05/12
+- 完成员工信息分页查询方法，并进行测试
+- 【测试分页查询功能】设置断点后测试，程序能够按照设计要求进行分页构造，发送请求后控制台输出：
+    2023-05-12 09:23:38.897  INFO 12632 --- [io-8080-exec-10] c.i.r.controller.EmployeeController      : page = 1, pageSize = 10, name = null
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5d4f077] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@69c7fcdb] will not be managed by Spring
+    ==>  Preparing: SELECT COUNT(*) FROM employee
+    ==> Parameters:
+    <==    Columns: COUNT(*)
+    <==        Row: 3
+    <==      Total: 1
+    ==>  Preparing: SELECT id,username,name,password,phone,sex,id_number,status,create_time,update_time,create_user,update_user FROM employee ORDER BY update_time DESC LIMIT ?
+    ==> Parameters: 10(Long)
+    <==    Columns: id, username, name, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user
+    <==        Row: 1656574859167215617, Zhangsan, 张三, e10adc3949ba59abbe56e057f20f883e, 17863179465, 1, 561323200112317511, 1, 2023-05-11 16:19:59, 2023-05-11 16:19:59, 1, 1
+    <==        Row: 1656556159546449922, zhangsan, 张三, e10adc3949ba59abbe56e057f20f883e, 13212345678, 1, 111222333444555666, 1, 2023-05-11 15:05:40, 2023-05-11 15:05:40, 1, 1
+    <==        Row: 1, admin, 管理员, e10adc3949ba59abbe56e057f20f883e, 13812312312, 1, 110101199001010047, 1, 2021-05-06 17:20:07, 2021-05-10 02:24:09, 1, 1
+    <==      Total: 3
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5d4f077]
+
+    如上的查询语句，即访问数据库查询所需的数据并得到结果
+
+    前端页面中能够展示对应的内容，并且抓包到json格式的数据：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": {
+    		"records": [{
+    			"id": 1656574859167215617,
+    			"username": "Zhangsan",
+    			"name": "张三",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "17863179465",
+    			"sex": "1",
+    			"idNumber": "561323200112317511",
+    			"status": 1,
+    			"createTime": [2023, 5, 11, 16, 19, 59],
+    			"updateTime": [2023, 5, 11, 16, 19, 59],
+    			"createUser": 1,
+    			"updateUser": 1
+    		}, {
+    			"id": 1656556159546449922,
+    			"username": "zhangsan",
+    			"name": "张三",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "13212345678",
+    			"sex": "1",
+    			"idNumber": "111222333444555666",
+    			"status": 1,
+    			"createTime": [2023, 5, 11, 15, 5, 40],
+    			"updateTime": [2023, 5, 11, 15, 5, 40],
+    			"createUser": 1,
+    			"updateUser": 1
+    		}, {
+    			"id": 1,
+    			"username": "admin",
+    			"name": "管理员",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "13812312312",
+    			"sex": "1",
+    			"idNumber": "110101199001010047",
+    			"status": 1,
+    			"createTime": [2021, 5, 6, 17, 20, 7],
+    			"updateTime": [2021, 5, 10, 2, 24, 9],
+    			"createUser": 1,
+    			"updateUser": 1
+    		}],
+    		"total": 3,
+    		"size": 10,
+    		"current": 1,
+    		"orders": [],
+    		"optimizeCountSql": true,
+    		"hitCount": false,
+    		"countId": null,
+    		"maxLimit": null,
+    		"searchCount": true,
+    		"pages": 1
+    	},
+    	"map": {}
+    }
+
+    说明分页查询功能有效。
+
+- 【测试条件查询功能】设置断点并运行程序，在前端输入“管理员”进行查询，能过够按照预期进入条件查询，控制台输出：
+    2023-05-12 09:35:15.244  INFO 19208 --- [nio-8080-exec-6] c.i.r.controller.EmployeeController      : page = 1, pageSize = 10, name = 管理员
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@b772ad] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@6a32401] will not be managed by Spring
+    ==>  Preparing: SELECT COUNT(*) FROM employee WHERE (name LIKE ?)
+    ==> Parameters: %管理员%(String)
+    <==    Columns: COUNT(*)
+    <==        Row: 1
+    <==      Total: 1
+    ==>  Preparing: SELECT id,username,name,password,phone,sex,id_number,status,create_time,update_time,create_user,update_user FROM employee WHERE (name LIKE ?) ORDER BY update_time DESC LIMIT ?
+    ==> Parameters: %管理员%(String), 10(Long)
+    <==    Columns: id, username, name, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user
+    <==        Row: 1, admin, 管理员, e10adc3949ba59abbe56e057f20f883e, 13812312312, 1, 110101199001010047, 1, 2021-05-06 17:20:07, 2021-05-10 02:24:09, 1, 1
+    <==      Total: 1
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@b772ad]
+
+    前端抓包到请求，响应json为：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": {
+    		"records": [{
+    			"id": 1,
+    			"username": "admin",
+    			"name": "管理员",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "13812312312",
+    			"sex": "1",
+    			"idNumber": "110101199001010047",
+    			"status": 1,
+    			"createTime": [2021, 5, 6, 17, 20, 7],
+    			"updateTime": [2021, 5, 10, 2, 24, 9],
+    			"createUser": 1,
+    			"updateUser": 1
+    		}],
+    		"total": 1,
+    		"size": 10,
+    		"current": 1,
+    		"orders": [],
+    		"optimizeCountSql": true,
+    		"hitCount": false,
+    		"countId": null,
+    		"maxLimit": null,
+    		"searchCount": true,
+    		"pages": 1
+    	},
+    	"map": {}
+    }
+
+    即查询到了姓名为“管理员”的账号信息，说明条件查询功能有效
+
+- 【实现启用/禁用员工账号功能】
+    代码执行过程分析：
+    1.页面发送ajax请求，将参数（id、status）提交到服务端
+    2.服务端Controller接收页面提交的数据并调用Service更新数据
+    3.Service调用Mapper操作数据库
+
+- 在EmployeeController中新建一个修改员工信息的update方法，用于进行对应id员工信息的修改（启用/禁用）
+- 测试时发现无法禁用：
+    前端提交禁用“Zhangsan”请求，debug时，从前端返回到服务端（调试的界面）获取的用户信息：
+    Employee(
+                id=1656574859167215600,
+                username=null,
+                name=null,
+                password=null,
+                phone=null,
+                sex=null,
+                idNumber=null,
+                status=0,
+                createTime=null,
+                updateTime=null,
+                createUser=null,
+                updateUser=null
+            )
+        放行后前端虽然提示修改成功，但控制台输出结果：
+        2023-05-12 11:45:17.382  INFO 5708 --- [nio-8080-exec-5] c.i.r.controller.EmployeeController      : Employee(id=1656574859167215600, username=null, name=null, password=null, phone=null, sex=null, idNumber=null, status=0, createTime=null, updateTime=null, createUser=null, updateUser=null)
+        Creating a new SqlSession
+        SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@a0839f5] was not registered for synchronization because synchronization is not active
+        2023-05-12 11:45:17.511 ERROR 5708 --- [nio-8080-exec-5] c.a.druid.pool.DruidAbstractDataSource   : discard long time none received connection. , jdbcUrl : jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true, jdbcUrl : jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true, lastPacketReceivedIdleMillis : 487785
+        JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@632de248] will not be managed by Spring
+        ==>  Preparing: UPDATE employee SET status=?, update_time=?, update_user=? WHERE id=?
+        ==> Parameters: 0(Integer), 2023-05-12T11:45:17.382979100(LocalDateTime), 1(Long), 1656574859167215600(Long)
+        <==    Updates: 0
+
+        由于没有查询到同id的用户，故提示Updates:0。
+        与此作为对比的时，服务端提交的json数据为：
+        {
+        	"code": 1,
+        	"msg": null,
+        	"data": {
+        		"records": [{
+        			"id": 1656574859167215617,
+        			"username": "Zhangsan",
+        			"name": "张三",
+        			"password": "e10adc3949ba59abbe56e057f20f883e",
+        			"phone": "17863179465",
+        			"sex": "1",
+        			"idNumber": "561323200112317511",
+        			"status": 1,
+        			"createTime": [2023, 5, 11, 16, 19, 59],
+        			"updateTime": [2023, 5, 11, 16, 19, 59],
+        			"createUser": 1,
+        			"updateUser": 1
+        		}, {
+        			"id": 1656556159546449922,
+        			"username": "zhangsan",
+        			"name": "张三",
+        			"password": "e10adc3949ba59abbe56e057f20f883e",
+        			"phone": "13212345678",
+        			"sex": "1",
+        			"idNumber": "111222333444555666",
+        			"status": 1,
+        			"createTime": [2023, 5, 11, 15, 5, 40],
+        			"updateTime": [2023, 5, 11, 15, 5, 40],
+        			"createUser": 1,
+        			"updateUser": 1
+        		}, {
+        			"id": 1,
+        			"username": "admin",
+        			"name": "管理员",
+        			"password": "e10adc3949ba59abbe56e057f20f883e",
+        			"phone": "13812312312",
+        			"sex": "1",
+        			"idNumber": "110101199001010047",
+        			"status": 1,
+        			"createTime": [2021, 5, 6, 17, 20, 7],
+        			"updateTime": [2021, 5, 10, 2, 24, 9],
+        			"createUser": 1,
+        			"updateUser": 1
+        		}],
+        		"total": 3,
+        		"size": 10,
+        		"current": 1,
+        		"orders": [],
+        		"optimizeCountSql": true,
+        		"hitCount": false,
+        		"countId": null,
+        		"maxLimit": null,
+        		"searchCount": true,
+        		"pages": 1
+        	},
+        	"map": {}
+        }
+        可以看到用户id是正确的，所以问题不在后端（服务端）
+
+        而之所以没有查到，是因为用户名为“Zhangsan”的用户信息，其id在数据库中为：1656574859167215617；而在这里变成了：1656574859167215600。这是因为js对long
+        型数据进行处理时丢失精度，导致提交的id和数据库中的id不一致
+        解决方法：在服务端给页面响应json数据时进行处理，将long型数据统一转换为String字符串，如：
+        ...
+        "id": "1656574859167215617",
+        "username": "Zhangsan",
+        "name": "张三",
+        "password": "e10adc3949ba59abbe56e057f20f883e",
+        "phone": "17863179465",
+        ...
+
+- 【修复启用/禁用员工账号功能】
+    实现步骤：
+    1.提供对象转换器JacksonObjectMapper，基于Jackson进行Java对象到Json数据的转换
+    2.在WebMvcConfig配置类中扩展Spring mvc的消息转换器，在消息转换器中使用提供的对象转换器进行Java对象到Json数据的转换
+
+- 在common包中导入（项目的 资料 - 对象映射器 文件夹中有，不过还是自己写了一遍）JacksonObjectMapper类，
+    用于将Java对象转为Json数据
+- 在WebMvcConfig类中新建一个用于扩展mvc框架的消息转换器
+- 【测试新的转换器和启用/禁用员工账号功能】完成后先在新建的方法中（WebMvcConfig - extendMessageConverters类）设置断点，
+    测试是否将新建的转换器加入原转换器集合中：
+    启动后，converter集合中初始只有7个转化器（size=7），而在执行完extend这部分代码后，size=8，且该转换器加入集合第一位，
+    说明代码有效
+
+- 随后打开前端页面，登录后抓包返回的分页信息，为：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": {
+    		"records": [{
+    			"id": "1656574859167215617",
+    			"username": "Zhangsan",
+    			"name": "张三",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "17863179465",
+    			"sex": "1",
+    			"idNumber": "561323200112317511",
+    			"status": 1,
+    			"createTime": "2023-05-11 16:19:59",
+    			"updateTime": "2023-05-11 16:19:59",
+    			"createUser": "1",
+    			"updateUser": "1"
+    		}, {
+    			"id": "1656556159546449922",
+    			"username": "zhangsan",
+    			"name": "张三",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "13212345678",
+    			"sex": "1",
+    			"idNumber": "111222333444555666",
+    			"status": 1,
+    			"createTime": "2023-05-11 15:05:40",
+    			"updateTime": "2023-05-11 15:05:40",
+    			"createUser": "1",
+    			"updateUser": "1"
+    		}, {
+    			"id": "1",
+    			"username": "admin",
+    			"name": "管理员",
+    			"password": "e10adc3949ba59abbe56e057f20f883e",
+    			"phone": "13812312312",
+    			"sex": "1",
+    			"idNumber": "110101199001010047",
+    			"status": 1,
+    			"createTime": "2021-05-06 17:20:07",
+    			"updateTime": "2021-05-10 02:24:09",
+    			"createUser": "1",
+    			"updateUser": "1"
+    		}],
+    		"total": 3,
+    		"size": 10,
+    		"current": 1,
+    		"orders": [],
+    		"optimizeCountSql": true,
+    		"hitCount": false,
+    		"countId": null,
+    		"maxLimit": null,
+    		"searchCount": true,
+    		"pages": 1
+    	},
+    	"map": {}
+    }
+    发现id已经转换为String格式了，同时Time相关的字段也变为我们在Jackson中设定的格式，说明转换器运行有效。
+    进一步测试禁用和启用功能，发现可以正常使用，前后端可以同步账号的启用(1)/禁用(0)状态
+    故转换器和启用禁用方法均有效
+
+- 【实现编辑员工信息的功能】
+    之前已经实现了新增员工信息的功能，现在实现编辑已有的员工信息的功能
+- 编辑员工信息的代码执行流程：
+    1.点击编辑按钮，页面跳转到add.html，并在url中携带参数[员工id]；
+    2.在add.html页面获取url中的参数[员工id]；
+    3.发送ajax请求，请求服务端并提交员工id参数；
+    4.服务端接收请求，根据员工id查询对应信息，将员工信息以Json形式返回给页面；
+    5.页面接收服务端相应的Json数据，通过VUE的数据绑定进行员工信息回显；
+    6.点击保存按钮，发送ajax请求，将页面中的员工信息以Json方式提交给服务端；
+    7.服务端接收员工信息，并进行处理，完成后给页面响应；
+    8.页面接收服务端响应信息后进行相应处理。
+
+- 在EmployeeController中创建一个getById方法，用于接收和处理前端返回的修改信息请求
+- 运行后，前端点击编辑按钮，可以正确显示员工信息，说明该方法有效，同时，前端修改信息后，后端数据库能够及时更新，说明该方法有效
+    （此处更新使用的时前面的update方法，与创建员工方法相同）
+
+
+2023/05/14
+- 【分类管理业务】
+- 【实现公共字段填充】
+    问题分析：
+    在前面完成的新增员工方法中，包含了创建时间、创建者、更新时间、更新者，编辑员工信息时需要设置修改时间和修改者，这些都属于
+    “公共字段”，能否将这些公共字段统一处理，来实现简化开发？
+    代码实现：
+    Mybatis Plus公共字段自动填充，也就是在代码插入或者更新时为指定字段赋予指定的值，使用它的好处是可以对这些字段做统一的处理，
+    避免重复代码
+    实现步骤：
+    1.在实体类的属性上加入@TableField注解，指定自动填充的策略
+    2.按照框架要求编写元数据对象处理器，在此类中统一为公共字段赋值，此类需要实现MetaObjectHandler接口
+
+- 在entity包下的Employee类中，给createTime、updateTime、createUser、updateUser分别加上@TableField，并指定填充策略
+- 在common包下新建一个MyMetaObjectHandler类，实现该接口
+- 代码初步完成后在该类的updateFill方法下新建断点，启动项目后，点击编辑，不做操作直接保存员工信息，可以转跳都该断点处，并返回一个
+    MetaObjet类，包含该员工的信息，说明该方法运行有效，下一步继续完善该代码
+
+
+2023/05/14
+- 将EmployeeController中save方法下创建时间、更新时间、创建者、更新者相关代码全部注释掉，之后使用公共字段自动填充代替这部分代码
+- 在MyMetaObjectHandler类中完善insertFill方法，设置createUser和updateUser时，需要new一个Long对象， 教程提供的方法是：
+    metaObject.setValue("createUser", new Long(1));     // update大同小异，只是把createUser改为updateUser即可，下同
+    但会在Long字段下出现报错：'Long(long)' 已弃用并被标记为移除
+    官方建议的方法是去掉new，并加上valueOf，即 ..., Long.valueOf(1)
+    但这样写又在valueOf下提示：不必要的装箱
+    按照提示方法移除装箱，即：1L
+    最后代码为：
+    metaObject.setValue("createUser", 1L);
+
+- 在完成inertFill方法后，设置断点进行测试，查看该方法能否插入公共字段
+- 添加用户WangHaiMing，发现能够转跳到断点处，并添加公共字段，说明insertFill方法有效
+- 完成updateFill方法（复制insertFill方法的部分代码），并在EmployeeController类中将update方法中有关这部分字段的代码注释掉
+- 设置断点，测试该方法，发现能够转跳断点处，并更新公共字段，说明updateFill方法有效
+
+- 【公共字段填充 优化】
+    已经完成了创建和更新员工信息方法的公共字段填充功能，但是其中填充的创建者和更新者均是写死的（1L），而不是动态获取的，下一步
+    需要将其升级为能够动态获取当前登录用户的id
+
+    思路：
+    由于MetaObject无法获取HttpSession，无法从登录用户的HttpSession中获取id，所以考虑使用ThreadLocal来解决此问题。
+    原理：
+    客户端每次发动http请求，对应的在服务器会分配一个新的线程来处理，在处理过程中涉及到下面类的方法都属于同一个线程：
+    1.LoginCheckFilter的doFilter方法
+    2.EmployeeController的update方法
+    3.MyMetaObjectHandler的updateFill方法
+    可以在以上三个方法下加入下面的代码（获取当前线程id）：
+    long id = Thread.currentThread().getId();
+    log.info("当前线程id：{}", id);
+
+    按照上述方法，在这三个方法中加入这段代码测试结果是否相同
+    点击一个员工的信息 - 编辑 - 保存（不进行任何修改），控制台输出：
+    2023-05-15 10:30:45.697  INFO 8300 --- [nio-8080-exec-7] c.i.reggie.filter.LoginCheckFilter: 当前线程id：52
+    2023-05-15 10:30:45.708  INFO 8300 --- [nio-8080-exec-7] c.i.r.controller.EmployeeController: 当前线程id：52
+    2023-05-15 10:30:45.712  INFO 8300 --- [nio-8080-exec-7] c.i.reggie.common.MyMetaObjectHandler: 当前线程id：52
+
+    可以看到上述三个方法的线程id确实相同，测试成功
+
+    功能实现：
+    在LoginCheckFilter的doFilter方法中获取当前登录用户id，并调用ThreadLocal方法设置当前线程局部变量的值（public void set(T value)），
+    也就是用户id，然后在MyMetaObjectHandler的updateFill中调用ThreadLocal的get方法（public T get()）来获得当前线程对应的
+    局部变量的值（用户id）。
+
+    实现步骤：
+    1.编写基于ThreadLocal封装的BaseContext工具类；
+    2.在LoginCheckFilter的doFilter方法中调用该工具类设置当前登录用户id；
+    3.在MyMetaObjectHandler的方法中调用该工具类获取当前登录用户id；
+
+- 在common包下新建一个BaseContext工具类
+- 其余按照上述实现步骤在对应类和方法中调用该工具类
+- 实现完成后设置断点，进行测试，发现可以通过该工具类获取对应的用户id，说明该方法有效
+
+- 【实现新增分类功能】
+    在前台系统的 分类管理 选项中实现菜品分类，分别包括菜品分类和套餐分类
+    同时，在前台的 菜品管理 和 套餐管理 两个选项中还可以分别输入菜品/套餐的名称、价格、菜品/套餐描述，
+    添加口味或做法，上传菜品/套餐的图片等功能
+
+- 在eneity包下新建一个Category类，这是菜品分类的实体类
+- 在mapper包下新建一个CategoryMapper接口
+- 在service包下新建一个CategoryService接口，并在service.impl包下新建CategoryServiceImpl类
+- 在controller包下新建一个CategoryController类
+- 新建完成后，在CategoryController类中新建save方法，用于实现保存分类数据
+- 完成该方法后，在前端新建菜品进行测试，新建菜品信息：
+    [
+        name = "鲁菜",
+        sort = "4"
+    ]
+
+    但提交信息后，虽然数据库也能显示菜品的名字和序号，但是唯独id显示为空，控制台提示其提交内容中id为空：
+    2023-05-15 15:46:56.973 ERROR 29276 --- [nio-8080-exec-6] c.a.druid.pool.DruidAbstractDataSource   : discard long time none received connection. , jdbcUrl : jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true, jdbcUrl : jdbc:mysql://localhost:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true, lastPacketReceivedIdleMillis : 693399
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@ea5367e] will not be managed by Spring
+    ==>  Preparing: INSERT INTO category ( id, type, name, sort, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 0(Long), 1(Integer), 鲁菜(String), 4(Integer), 2023-05-15T15:46:56.973204(LocalDateTime), 2023-05-15T15:46:56.973204(LocalDateTime), 1(Long), 1(Long)
+    <==    Updates: 1
+
+    重新检查代码后，发现在entity包党的Category类下的id数据类型错写为“long”，而正确的写法应该是“Long”，所以写入时无法正确
+    输入id
+    修改后重新测试，新增成功：
+    2023-05-15 16:24:59.541  INFO 18668 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@292dfa4d
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@9db0101] will not be managed by Spring
+    ==>  Preparing: INSERT INTO category ( id, type, name, sort, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1658025672146161666(Long), 1(Integer), 鲁菜(String), 4(Integer), 2023-05-15T16:24:59.543471200(LocalDateTime), 2023-05-15T16:24:59.543471200(LocalDateTime), 1(Long), 1(Long)
+    <==    Updates: 1
+    说明该方法有效
+
+- 【实现分类信息分页查询功能】
+    代码执行过程分析：
+    1.页面发送ajax请求，将分页参数（page、pageSize）提交到服务端
+    2.服务端Controller接收页面提交的数据并调用Service查询数据
+    3.Service调用Mapper操作数据库，查询分页数据
+    4.Controller将查询到的分页数据响应给页面
+    5.页面接收分页数据并通过ElementUI的Table组件展示到页面上
+
+- 在CategoryController类中新增page方法，用于实现分页查询功能
+- 完成代码后，启动项目进行测试，发现会发生报错：
+    2023-05-15 17:35:39.310  INFO 11372 --- [nio-8080-exec-5] c.i.reggie.filter.LoginCheckFilter       : 用户已登录，id为：1
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3c6c6bb6] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1bbcca2b] will not be managed by Spring
+    ==>  Preparing: SELECT COUNT(*) FROM category
+    ==> Parameters:
+    <==    Columns: COUNT(*)
+    <==        Row: 9
+    <==      Total: 1
+    ==>  Preparing: SELECT id,type,name,sort,create_time,update_time,create_user,update_user,is_deleted FROM category LIMIT ?
+    ==> Parameters: 10(Long)
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3c6c6bb6]
+    2023-05-15 17:35:39.480 ERROR 11372 --- [nio-8080-exec-5] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is org.springframework.jdbc.BadSqlGrammarException:
+    ### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'is_deleted' in 'field list'
+    ### The error may exist in com/itheima/reggie/mapper/CategoryMapper.java (best guess)
+    ### The error may involve defaultParameterMap
+    ### The error occurred while setting parameters
+    ### SQL: SELECT  id,type,name,sort,create_time,update_time,create_user,update_user,is_deleted  FROM category LIMIT ?
+    ### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'is_deleted' in 'field list'
+    ; bad SQL grammar []; nested exception is java.sql.SQLSyntaxErrorException: Unknown column 'is_deleted' in 'field list'] with root cause
+
+    java.sql.SQLSyntaxErrorException: Unknown column 'is_deleted' in 'field list'
+    	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:120) ~[mysql-connector-java-8.0.23.jar:8.0.23]
+    	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122) ~[mysql-connector-java-8.0.23.jar:8.0.23]
+    	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:953) ~[mysql-connector-java-8.0.23.jar:8.0.23]
+    	[...省略...]
+    	at java.base/java.lang.Thread.run(Thread.java:833) ~[na:na]
+
+    发现主要报错内容为：Unknown column 'is_deleted' in 'field list'] with root cause
+    猜测是Category实体类中的isDelete字段对应的删改功能尚未实现造成的，将其注释掉后再次运行，发现运行成功：
+    2023-05-15 17:40:13.488  INFO 20968 --- [nio-8080-exec-7] c.i.reggie.filter.LoginCheckFilter       : 用户已登录，id为：1
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9d5e35d] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@2c4fc1cb] will not be managed by Spring
+    ==>  Preparing: SELECT COUNT(*) FROM category
+    ==> Parameters:
+    <==    Columns: COUNT(*)
+    <==        Row: 9
+    <==      Total: 1
+    ==>  Preparing: SELECT id,type,name,sort,create_time,update_time,create_user,update_user FROM category LIMIT ?
+    ==> Parameters: 10(Long)
+    <==    Columns: id, type, name, sort, create_time, update_time, create_user, update_user
+    <==        Row: 1397844263642378242, 1, 湘菜, 1, 2021-05-27 09:16:58, 2021-07-15 20:25:23, 1, 1
+    <==        Row: 1397844303408574465, 1, 川菜, 2, 2021-05-27 09:17:07, 2021-06-02 14:27:22, 1, 1
+    <==        Row: 1397844391040167938, 1, 粤菜, 3, 2021-05-27 09:17:28, 2021-07-09 14:37:13, 1, 1
+    <==        Row: 1413341197421846529, 1, 饮品, 11, 2021-07-09 11:36:15, 2021-07-09 14:39:15, 1, 1
+    <==        Row: 1413342269393674242, 2, 商务套餐, 5, 2021-07-09 11:40:30, 2021-07-09 14:43:45, 1, 1
+    <==        Row: 1413384954989060097, 1, 主食, 12, 2021-07-09 14:30:07, 2021-07-09 14:39:19, 1, 1
+    <==        Row: 1413386191767674881, 2, 儿童套餐, 6, 2021-07-09 14:35:02, 2021-07-09 14:39:05, 1, 1
+    <==        Row: 1658025672146161666, 1, 鲁菜, 4, 2023-05-15 16:25:00, 2023-05-15 16:25:00, 1, 1
+    <==        Row: 1658031248918028289, 1, 闽菜, 5, 2023-05-15 16:47:09, 2023-05-15 16:47:09, 1, 1
+    <==      Total: 9
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@9d5e35d]
+
+    查询到了对应结果，故该查询方法有效
+
+
+2023/05/16
+- 【实现删除分类功能】
+    代码执行过程分析：
+    1.页面发送ajax请求，将参数id提交到服务端；
+    2.服务端Controller接收页面提交的数据并调用Service删除数据；
+    3，Service调用Mapper操作数据库。
+
+- 在CategoryController类中新建一个delete方法，用于实现删除分类操作
+- 完成后启动项目进行测试，前端发起删除请求（删除“闽菜”对应信息）后，后端可以收到，但控制台提示：
+    2023-05-16 10:08:44.613  INFO 12316 --- [nio-8080-exec-2] c.i.r.controller.CategoryController      : 删除分类的id为：null
+    Creating a new SqlSession
+    Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@65cccbe4]
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7decc6c5] will be managed by Spring
+    ==>  Preparing: DELETE FROM category WHERE id=?
+    ==> Parameters: null
+    <==    Updates: 0
+
+    同时前端虽然提示删除成功，但实际上这条信息仍然存在
+    # 方法1：
+    在yml文件中加入：
+    druid:
+        mysql:
+            usePingMethod=false
+    # 方法2：
+    在CategoryController类的delete方法前加上@transaction注释
+
+    以上两种方法重启测试后均无效
+
+- 考虑是否是Category实体类中的isDelete字段未启用？
+    但是对应数据库表中都没有该字段，就算启用该字段，很可能导致报错?
+    尝试启用isDelete字段
+    果然，启用后报错，还是将其注释掉
+
+- 再次观察前端信息，发现其提交的json中，类名为"ids"而非"id"，故将CategoryController类的delete方法中的id改为ids，重启测试后，
+    删除成功，控制台（删除提示）：
+    2023-05-16 10:45:31.381  INFO 8484 --- [nio-8080-exec-9] c.i.r.controller.CategoryController      : 删除分类的id为：1658031248918028289
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6df4e6a1] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1bbcca2b] will not be managed by Spring
+    ==>  Preparing: DELETE FROM category WHERE id=?
+    ==> Parameters: 1658031248918028289(Long)
+    <==    Updates: 1
+
+    控制台（查询结果提示）：
+    2023-05-16 10:45:31.792  INFO 8484 --- [nio-8080-exec-8] c.i.reggie.filter.LoginCheckFilter       : 用户已登录，id为：1
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@581c35f7] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1bbcca2b] will not be managed by Spring
+    ==>  Preparing: SELECT COUNT(*) FROM category
+    ==> Parameters:
+    <==    Columns: COUNT(*)
+    <==        Row: 8
+    <==      Total: 1
+    ==>  Preparing: SELECT id,type,name,sort,create_time,update_time,create_user,update_user FROM category LIMIT ?
+    ==> Parameters: 10(Long)
+    <==    Columns: id, type, name, sort, create_time, update_time, create_user, update_user
+    <==        Row: 1397844263642378242, 1, 湘菜, 1, 2021-05-27 09:16:58, 2021-07-15 20:25:23, 1, 1
+    [后略......]
+
+    可以看到成功执行了DELETE操作并删除了对应id的菜品信息
+    同时再次执行分页查询时结果从Row:9变为Row:8
+    说明该修复方法有效
+
+- 【完善删除分类功能】
+    新增：检查删除的分类是否关联了菜品或套餐，如果关联则不可删除
+
+- 在entity包中导入Dish和Setmeal类（资料中有，自己写一遍）
+- 在mapper包下创建DishMapper和SetmealMapper接口
+- 在service包下创建DishService和SetmealService接口，并在service.impl包下创建对应的DishServiceImpl和
+    SetmealServiceImpl实现类
+- 在CategoryService接口中创建一个remove方法，用于实现检查并删除方法，并在对应的CategoryServiceImpl类中
+    实现判断和删除分类的代码
+- 在common包中创建CustomException业务异常类，用于CategoryServiceImpl类中异常的抛出
+
+- 【实现修改分类功能】
+- 在CategoryController类中新建一个update方法，实现修改/更新分类的功能
+- 完成方法代码后在前端进行
+测试，能够正常修改菜品分类的名称和类别，故该方法有效
+
+
+- 【菜品管理业务开发】
+- 【实现文件上传下载功能 - 上传功能】
+- 使用ElementUI提供的上传组件即可，可直接从项目资料 - 文件上传下载页面中的upload.html文件，在./resources/backend/page下新建
+demo文件夹，然后将upload.html导入其中即可
+- 在controller包下新建CommonController类，并创建upload方法，用于实现文件上传
+- 在yml文件中配置一个路径（"F:\\JAVA and C practice\\springShiZhan_reggieTakeOut\\TempImg"），用于上传文件的暂存
+
+
+2023/05/17
+- 继续完善文件上传下载功能
+- 在完善upload方法的文件名生成的代码后，在test.java包下新建com.itheima.test包，并在包下新建UploadFileTest类，用于测试该
+    方法
+    经测试，这部分代码有效
+    继续测试该方法，能够实现文件上传和UUID随机生成文件名，说明该方法有效
+
+- 【实现文件上传下载功能 - 下载功能】
+- 在控制类中新建download方法，实现文件的下载
+- 完成后进行测试，发现可以正常上传文件，上传后前端可以正确回显，说明该文件已被成功下载，即该方法有效
+
+- 【实现新增菜品功能】
+    代码执行过程分析：
+    1.页面（backend/page/food/add.html）发送ajax请求，请求服务端获取菜品分类数据并展示到下拉框中
+    2.页面发送请求进行图片上传，请求服务端将图片保存到服务器
+    3.页面发送请求进行图片下载，将上传图片进行回显
+    4.点击保存按钮，发送ajax请求，将菜品相关数据以json格式提交给服务端
+
+- 前置准备：
+- 从课程资料中导入实体类DishFlavor
+- 在mapper包下新建DishFlavorMapper接口
+- 在service包下新建DishFlavorService接口，并在service.impl包中创建对应的DishFlavorServiceImpl实现类
+- 在controller包下新建DishController控制类
+
+- 在CategoryController类中新建一个List方法，用于【实现新增菜品功能中根据条件查询分类数据的功能，并显示在菜品分类的这个下拉框中】
+- 在DishController类中新建一个save方法，用于实现新增菜品功能
+    由于页面传输的json数据：
+    {
+      "name": "辣椒炒肉",
+      "price": 10000,
+      "code": "",
+      "image": "53fbb9e0-1344-4bf6-9d97-dfd464ff65fe.jpg",
+      "description": "test",
+      "status": 1,
+      "categoryId": "1397844263642378242",
+      "flavors": [
+        {
+          "name": "辣度",
+          "value": "[\"中辣\"]",
+          "showOption": false
+        }
+      ]
+    }
+    与Dish实体类并不相同（增加了如flavors字段），所以需要实现新的实体，即DTO（Data Transfer Object，数据传输对象，它一般
+    用于展示层与服务层之间的数据传输）
+
+- 需要使用的是DishDTO，它在资料/dto中给出了，同时在reggie目录下新建一个名为dto的包，然后直接导入即可
+- 在DishService接口中创建一个saveWithFlavor方法，并在对应的实现类中实现这个方法（！注意！该方法涉及多个表的操作，所以实现
+    比较复杂，详见 ./DishServiceImpl.class/saveWithFlavor 方法）
+- 完成上述方法后，在DishController中完善save方法，并进行测试，在菜品管理页面新建菜品“广式白切鸡”，并提交保存，控制台输出：
+    2023-05-17 16:33:30.502  INFO 18848 --- [nio-8080-exec-4] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@6919d74a
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@6c3eb1fd] will be managed by Spring
+    ==>  Preparing: INSERT INTO dish ( id, name, category_id, price, code, image, description, status, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1658752591019921409(Long), 广式白切鸡(String), 1397844391040167938(Long), 3699(BigDecimal), (String), 4d897450-dbe2-4fd1-bbd8-a41bc78f5082.jpeg(String), 数一数二的白切鸡(String), 1(Integer), 2023-05-17T16:33:30.503173(LocalDateTime), 2023-05-17T16:33:30.503173(LocalDateTime), 1(Long), 1(Long)
+    <==    Updates: 1
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@357a4321]
+    2023-05-17 16:33:30.826  INFO 18848 --- [nio-8080-exec-4] c.i.reggie.common.MyMetaObjectHandler    : 公共字段自动填充[insert]...
+    2023-05-17 16:33:30.826  INFO 18848 --- [nio-8080-exec-4] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@3ddfddff
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@6c3eb1fd] will be managed by Spring
+    ==>  Preparing: INSERT INTO dish_flavor ( id, dish_id, name, value, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1658752592404041730(Long), 1658752591019921409(Long), 辣度(String), ["不辣"](String), 2023-05-17T16:33:30.827341200(LocalDateTime), 2023-05-17T16:33:30.827341200(LocalDateTime), 1(Long), 1(Long)
+    2023-05-17 16:33:30.829  INFO 18848 --- [nio-8080-exec-4] c.i.reggie.common.MyMetaObjectHandler    : 公共字段自动填充[insert]...
+    2023-05-17 16:33:30.829  INFO 18848 --- [nio-8080-exec-4] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@3bbdbea
+    ==> Parameters: 1658752592404041731(Long), 1658752591019921409(Long), 忌口(String), ["不要蒜","不要辣"](String), 2023-05-17T16:33:30.829486(LocalDateTime), 2023-05-17T16:33:30.829486(LocalDateTime), 1(Long), 1(Long)
+    Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@357a4321]
+    Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@357a4321]
+    Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@357a4321]
+
+    可以看到新建了广式白切鸡，并对应新建了两种口味的信息，说明该方法有效
+
+- 【实现菜品信息分页查询功能】
+    代码执行过程分析：
+    1.页面（backend/page/food/list.html）发送ajax请求，将分页参数（page、pageSize、name）提交到服务端，获取分页数据
+    2.页面发送请求，请求服务端进行图片下载
+
+- 在DishController中新建一个page方法，用于实现菜品信息的分页查询功能
+- 初步完成后进行测试，发现可以完成基本的分页显示（前端返回json）：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": {
+    		"records": [{
+    			"id": "1658752591019921409",
+    			"name": "广式白切鸡",
+    			"categoryId": "1397844391040167938",
+    			"price": 3699.00,
+    			"code": "",
+    			"image": "4d897450-dbe2-4fd1-bbd8-a41bc78f5082.jpeg",
+    			"description": "数一数二的白切鸡",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2023-05-17 16:33:31",
+    			"updateTime": "2023-05-17 16:33:31",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1413384757047271425",
+    			"name": "王老吉",
+    			"categoryId": "1413341197421846529",
+    			"price": 500.00,
+    			"code": "",
+    			"image": "00874a5e-0df2-446b-8f69-a30eb7d88ee8.png",
+    			"description": "",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-07-09 14:29:20",
+    			"updateTime": "2021-07-12 09:09:16",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1413385247889891330",
+    			"name": "米饭",
+    			"categoryId": "1413384954989060097",
+    			"price": 200.00,
+    			"code": "",
+    			"image": "ee04a05a-1230-46b6-8ad5-1a95b140fff3.png",
+    			"description": "",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-07-09 14:31:17",
+    			"updateTime": "2021-07-11 16:35:26",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1413342036832100354",
+    			"name": "北冰洋",
+    			"categoryId": "1413341197421846529",
+    			"price": 500.00,
+    			"code": "",
+    			"image": "c99e0aab-3cb7-4eaa-80fd-f47d4ffea694.png",
+    			"description": "",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-07-09 11:39:35",
+    			"updateTime": "2021-07-09 15:12:18",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397862477831122945",
+    			"name": "上汤焗龙虾",
+    			"categoryId": "1397844391040167938",
+    			"price": 108800.00,
+    			"code": "1234567865432",
+    			"image": "5b8d2da3-3744-4bb3-acdc-329056b8259d.jpeg",
+    			"description": "上汤焗龙虾是一道色香味俱全的传统名菜，属于粤菜系。此菜以龙虾为主料，配以高汤制成的一道海鲜美食。本品肉质洁白细嫩，味道鲜美，蛋白质含量高，脂肪含量低，营养丰富。是色香味俱全的传统名菜。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:29:20",
+    			"updateTime": "2021-05-27 10:29:20",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397862198033297410",
+    			"name": "老火靓汤",
+    			"categoryId": "1397844391040167938",
+    			"price": 49800.00,
+    			"code": "123456786532455",
+    			"image": "583df4b7-a159-4cfc-9543-4f666120b25f.jpeg",
+    			"description": "老火靓汤又称广府汤，是广府人传承数千年的食补养生秘方，慢火煲煮的中华老火靓汤，火候足，时间长，既取药补之效，又取入口之甘甜。 广府老火汤种类繁多，可以用各种汤料和烹调方法，烹制出各种不同口味、不同功效的汤来。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:28:14",
+    			"updateTime": "2021-05-27 10:28:14",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397861683434139649",
+    			"name": "清蒸河鲜海鲜",
+    			"categoryId": "1397844391040167938",
+    			"price": 38800.00,
+    			"code": "1234567876543213456",
+    			"image": "1405081e-f545-42e1-86a2-f7559ae2e276.jpeg",
+    			"description": "新鲜的海鲜，清蒸是最好的处理方式。鲜，体会为什么叫海鲜。清蒸是广州最经典的烹饪手法，过去岭南地区由于峻山大岭阻隔，交通不便，经济发展起步慢，自家打的鱼放在锅里煮了就吃，没有太多的讲究，但却发现这清淡的煮法能使鱼的鲜甜跃然舌尖。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:26:11",
+    			"updateTime": "2021-05-27 10:26:11",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397860963880316929",
+    			"name": "脆皮乳鸽",
+    			"categoryId": "1397844391040167938",
+    			"price": 10800.00,
+    			"code": "1234563212345",
+    			"image": "3fabb83a-1c09-4fd9-892b-4ef7457daafa.jpeg",
+    			"description": "“脆皮乳鸽”是广东菜中的一道传统名菜，属于粤菜系，具有皮脆肉嫩、色泽红亮、鲜香味美的特点，常吃可使身体强健，清肺顺气。随着菜品制作工艺的不断发展，逐渐形成了熟炸法、生炸法和烤制法三种制作方法。无论那种制作方法，都是在鸽子经过一系列的加工，挂脆皮水后再加工而成，正宗的“脆皮乳鸽皮脆肉嫩、色泽红亮、鲜香味美、香气馥郁。这三种方法的制作过程都不算复杂，但想达到理想的效果并不容易。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:23:19",
+    			"updateTime": "2021-05-27 10:23:19",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397860792492666881",
+    			"name": "烤乳猪",
+    			"categoryId": "1397844391040167938",
+    			"price": 38800.00,
+    			"code": "213456432123456",
+    			"image": "2e96a7e3-affb-438e-b7c3-e1430df425c9.jpeg",
+    			"description": "广式烧乳猪主料是小乳猪，辅料是蒜，调料是五香粉、芝麻酱、八角粉等，本菜品主要通过将食材放入炭火中烧烤而成。烤乳猪是广州最著名的特色菜，并且是“满汉全席”中的主打菜肴之一。烤乳猪也是许多年来广东人祭祖的祭品之一，是家家都少不了的应节之物，用乳猪祭完先人后，亲戚们再聚餐食用。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:22:39",
+    			"updateTime": "2021-05-27 10:22:39",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}, {
+    			"id": "1397860578738352129",
+    			"name": "白切鸡",
+    			"categoryId": "1397844391040167938",
+    			"price": 6600.00,
+    			"code": "12345678654",
+    			"image": "9ec6fc2d-50d2-422e-b954-de87dcd04198.jpeg",
+    			"description": "白切鸡是一道色香味俱全的特色传统名肴，又叫白斩鸡，是粤菜系鸡肴中的一种，始于清代的民间。白切鸡通常选用细骨农家鸡与沙姜、蒜茸等食材，慢火煮浸白切鸡皮爽肉滑，清淡鲜美。著名的泮溪酒家白切鸡，曾获商业部优质产品金鼎奖。湛江白切鸡更是驰名粤港澳。粤菜厨坛中，鸡的菜式有200余款之多，而最为人常食不厌的正是白切鸡，深受食家青睐。",
+    			"status": 1,
+    			"sort": 0,
+    			"createTime": "2021-05-27 10:21:48",
+    			"updateTime": "2021-05-27 10:21:48",
+    			"createUser": "1",
+    			"updateUser": "1",
+    			"isDeleted": 0
+    		}],
+    		"total": 24,
+    		"size": 10,
+    		"current": 1,
+    		"orders": [],
+    		"optimizeCountSql": true,
+    		"hitCount": false,
+    		"countId": null,
+    		"maxLimit": null,
+    		"searchCount": true,
+    		"pages": 3
+    	},
+    	"map": {}
+    }
+
+    但无法显示菜品分类，这是由于无法服务端返回CategoryId信息导致的
+- 在page方法中继续完善，实现能够显示分类信息
+
+
+2023/05/17
+- 测试已完成的page菜品分页查询方法代码，启动测试后可以显示之前空缺的菜品分类信息，说明该方法有效
+
+- 【实现修改菜品功能开发】
+    代码执行/交互过程：
+    1.页面发送ajax请求，请求服务端获取分类数据，用于菜品分类下拉框中数据显示（在新增菜品时已完成该功能开发）
+    2.页面发送ajax请求，请求服务端，根据id查询当前菜品信息，用于菜品信息回显
+    3.页面发送请求，请求服务端进行图片下载，用于页图片回显
+    4.点击保存按钮后页面发送ajax请求，将修改后的菜品数据以json格式提交服务端
+
+- 【修改菜品 - 页面回显部分】
+- 在DishController中新建一个get方法，用于根据id查询对应的菜品和对应的菜品口味信息
+- 由于需要同时查询两张表，直接使用DishService无法实现该需求，故在DishService中扩展一个getByIdWithFlavor方法，并在对应的
+实现类中实现该方法
+- 实现完成后测试，点击前端修改按钮可以实现菜品信息回显，说明该方法有效
+- 【修改菜品 - 更新信息部分】
+- 在DishController类中新建update方法，用于实现菜品信息更新
+- 在DishService接口中新建updateWithFlavor方法，并在对应的Impl类中实现该方法
+- 完成后进行测试，将“广式白切鸡”改为“至臻广式白切鸡”，修改失败；控制台：
+    2023-05-18 10:49:26.404  INFO 33596 --- [nio-8080-exec-6] c.i.reggie.common.MyMetaObjectHandler    : 当前线程id：47
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@950e691] will be managed by Spring
+    ==>  Preparing: UPDATE dish SET update_time=?, update_user=? WHERE id=?
+    ==> Parameters: 2023-05-18T10:49:26.405264200(LocalDateTime), 1(Long), null
+    <==    Updates: 0
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c]
+    Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c] from current transaction
+    ==>  Preparing: DELETE FROM dish_flavor WHERE (dish_id = ?)
+    ==> Parameters: null
+    <==    Updates: 0
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c]
+    Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c]
+    Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c]
+    Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@692a75c]
+
+    前端返回响应结果：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": "修改菜品成功！",
+    	"map": {}
+    }
+
+    控制台信息中update = 0，虽然提示修改成功，但没有更新
+    检查代码后，发现需要在Impl类对应方法前加上@Transaction注解，并在控制类对应方法的形参前加入@RequestBody注解
+
+- 修改后再次测试，成功修改，说明该方法有效
+
+
+- 【套餐管理业务开发】
+- 【实现新增套餐功能】
+- 前置准备：
+    导入实体类SetmealDish、DIO类SetmealDto
+    在mapper包中新建SetmealDishMapper接口
+    在service包中新建SetmealDishService接口，并在service.impl包中创建对应的SetmealDishServiceImpl实现类
+    在controller包中SetmealContorller类
+
+    代码执行/交互过程：
+    1.页面（backend/page/combo/add.html）发送ajax请求，请求服务端获取套餐分类数据并展示到下拉框中
+    2.页面发送ajax请求，请求服务端获取菜品分类数据并展示到添加菜品窗口中
+    3.页面发送ajax请求，请求服务端根据菜品分类查询对应的菜品数据并展示到添加菜品窗口中
+    4.页面发送请求进行图片上传，请求服务端将图片保存到服务器
+    5.页面发送请求进行图片下载，将上传的图片进行回显
+    6.点击保存按钮，发送ajax请求，将套餐相关数据以json形式提交到服务端
+
+    上述交互过程中，1和2已经在新增菜品部分完成了，这部分代码可以通用，接下来实现第3步，即根据菜品分类查询对应的菜品数据
+
+- （根据id查询菜品信息）
+- 在DishCotroller中新建一个list方法，实现菜品分类查询功能
+- 完成代码后启动测试，发现在 套餐管理 - 添加菜品 选项中可以正确显示菜品信息，说明该方法有效
+
+- 继续完善【新增套餐功能】
+- 在SetmealContorller中新建save方法，用于实现处理前端提交的保存套餐数据的请求
+- 在SetmealSerivce接口（注意，不是SetmealDishService！）中新建saveWithDish方法
+
+
+2023/05/19
+- 继续完成上述方法，并在对应的实现类SetmealSerivceImpl中实现该方法
+- 完成该方法后在save方法中调用该方法，实现新建套餐功能
+- 测试该方法，加入“至臻套餐 甲”，发现可以正常保存，控制台输出：
+    2023-05-19 10:08:12.817  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@126d6dc
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@383cad36] will be managed by Spring
+    ==>  Preparing: INSERT INTO setmeal ( id, category_id, name, price, status, code, description, image, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1659380404135694337(Long), 1413342269393674242(Long), 至臻套餐 甲(String), 6998.999999999999(BigDecimal), 1(Integer), (String), 至臻套餐，品质之选(String), 7ad9e7fa-7cb8-4296-a147-d89415b58de8.jpeg(String), 2023-05-19T10:08:12.829298700(LocalDateTime), 2023-05-19T10:08:12.829298700(LocalDateTime), 1(Long), 1(Long)
+    <==    Updates: 1
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@69bbb9b6]
+    2023-05-19 10:08:13.913  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : 公共字段自动填充[insert]...
+    2023-05-19 10:08:13.914  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@22454d8d
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@383cad36] will be managed by Spring
+    ==>  Preparing: INSERT INTO setmeal_dish ( id, setmeal_id, dish_id, name, price, copies, create_time, update_time, create_user, update_user ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+    ==> Parameters: 1659380408795566081(Long), 1659380404135694337(Long), 1658752591019921409(Long), 至臻广式白切鸡(String), 5999(BigDecimal), 1(Integer), 2023-05-19T10:08:13.914898100(LocalDateTime), 2023-05-19T10:08:13.915896900(LocalDateTime), 1(Long), 1(Long)
+    2023-05-19 10:08:13.924  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : 公共字段自动填充[insert]...
+    2023-05-19 10:08:13.925  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@62354039
+    ==> Parameters: 1659380408795566082(Long), 1659380404135694337(Long), 1413384757047271425(Long), 王老吉(String), 500(BigDecimal), 1(Integer), 2023-05-19T10:08:13.925868(LocalDateTime), 2023-05-19T10:08:13.925868(LocalDateTime), 1(Long), 1(Long)
+    2023-05-19 10:08:13.929  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : 公共字段自动填充[insert]...
+    2023-05-19 10:08:13.930  INFO 5020 --- [nio-8080-exec-5] c.i.reggie.common.MyMetaObjectHandler    : org.apache.ibatis.reflection.MetaObject@3cae1232
+    ==> Parameters: 1659380408862674945(Long), 1659380404135694337(Long), 1413385247889891330(Long), 米饭(String), 200(BigDecimal), 1(Integer), 2023-05-19T10:08:13.931852500(LocalDateTime), 2023-05-19T10:08:13.931852500(LocalDateTime), 1(Long), 1(Long)
+    Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@69bbb9b6]
+
+    查看数据库，发现setmeal表和setmeal_dish表均成功插入数据：
+    setmeal：
+    '1659380404135694337', '1413342269393674242', '至臻套餐 甲', '6999.00', '1', '', '至臻套餐，品质之选', '7ad9e7fa-7cb8-4296-a147-d89415b58de8.jpeg', '2023-05-19 10:08:13', '2023-05-19 10:08:13', '1', '1', '0'
+
+    setmeal_dish:
+    '1659380408795566081', '1659380404135694337', '1658752591019921409', '至臻广式白切鸡', '5999.00', '1', '0', '2023-05-19 10:08:14', '2023-05-19 10:08:14', '1', '1', '0'
+    '1659380408795566082', '1659380404135694337', '1413384757047271425', '王老吉', '500.00', '1', '0', '2023-05-19 10:08:14', '2023-05-19 10:08:14', '1', '1', '0'
+    '1659380408862674945', '1659380404135694337', '1413385247889891330', '米饭', '200.00', '1', '0', '2023-05-19 10:08:14', '2023-05-19 10:08:14', '1', '1', '0'
+
+    插入数据成功，说明该方法有效
+
+- 【实现套餐分页查询功能】
+    代码执行/交互过程分析：
+    1.页面（backend/page/combo/list.html）发送ajax请求，将分页参数（page、pageSize、name）提交到服务端，获取分页数据
+    2.页面发送请求，请求服务端下载图片，用于页面展示
+
+- 在SetmealController中新建一个page方法，用于实现套餐分页查询功能
+- 完成方法后进行测试，发现前端可以正常显示套餐信息（包括 套餐分类 这个字段），前端页面发送请求可正确响应，控制台输出结果正确，
+    即该方法有效
+
+- 【实现删除套餐功能】
+- 在SetmealController中新建一个delete方法（该方法需要使用List<Long>类型，以传入多个可能的参数）
+- 由于需要同时删除套餐和与之对应的菜品，所以需要在SetmealService接口中创建一个removeWithDish方法，
+    并在对应的实现类中实现该方法
+- 完成后，创建一个名为“水煮鱼-乙”的套餐，将其售卖状态改为停售，测试删除功能，前端点击删除，后端控制台：
+    ==>  Preparing: DELETE FROM setmeal WHERE id IN ( ? )
+    ==> Parameters: 1659454587704279042(Long)
+    <==    Updates: 1
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6e4db65d]
+    Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6e4db65d] from current transaction
+    ==>  Preparing: DELETE FROM setmeal_dish WHERE (setmeal_id IN (?))
+    ==> Parameters: 1659454587704279042(Long)
+    <==    Updates: 3
+
+    可以看到删除了该套餐和对应的菜品信息，检查前端和数据库发现信息确实已被删除，说明该方法有效
+    【更改售卖状态的功能见下】
+
+
+2023/05/19 - 05/20
+-【实现套餐修改功能（迫真自研），1.0版（仅能实现单个状态更新）】
+- 由于在删除套餐时需要先将套餐售卖状态改为停售状态（即status=1），而该对应功能还未开发出来，且教程中也没有，故自行研究开发
+- 在SetmealController中创建一个update方法，用于实现套餐状态的变更
+    1.注释使用PostMapping，路径为：("/status/{status}")，因为请求发送路径为（示例）：
+    setmeal/status/0?id=xxxxx，即status/ 后跟当前菜品的状态
+    2.参数为：@PathVariable Integer status, @RequestParam Long ids，注意前一个变量的注释为@PathVariable，因为要填入
+    请求路径中
+    3.调用对应的SetmealService接口中updateStatus方法（该方法需要后续完善），传入上述两个参数（status和ids）
+
+- 在SetmealServicce中创建updateStatus方法
+- 在对应的SetmealServicceImpl中实现该方法
+    1.由于涉及数据字段的更改，故原有的LambdaQueryWrapper方法不适用，改为LambdaUpdateWrapper
+    2.使用Setmeal泛型
+    3.先使用eq方法对ids进行条件匹配
+    4.再使用set方法对传入的status进行修改
+    5.最后使用update方法执行上述两个方法，完成修改
+
+
+2023/05/22
+-【实现手机验证码登录功能】
+    （由于该方法为登录功能的扩展方法，且需要使用阿里云的付费服务，为了尽早实现该项目，先开发后续订单功能）
+
+-【实现套餐修改功能（迫真自研），1.1版（实现批量状态更新）】
+- 将SetmealController中的update方法中的ids参数改为List<Long> ids，实现传入多个参数
+- 在SetmealServieImpl中将eq方法改为in方法，以实现对传入多个参数的匹配
+- *测试，前端点击修改，后端控制台：
+    ==>  Preparing: UPDATE setmeal SET status=? WHERE (id IN (?))
+    ==> Parameters: 0(Integer), 1659454587704279042(Long), 1659454587704279043(Long), 1659454587704279044(Long)
+    <==    Updates: 3
+    Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6e4db65d]
+    Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6e4db65d] from current transaction
+
+    可以看到修改了该套餐和对应的菜品信息，检查前端和数据库发现信息确实已被修改，说明该方法有效 *
+    // 注：上述在星号（*）标注内的部分为copilot代写
+
+
+2023/05/23
+- 由于完成后续内容（菜品展示、购物车等）需要登录到前端页面（手机端），所以先完成登录功能，先实现一个伪验证码登录功能，
+    之后再考虑真实的验证码登录
+
+- 【实现手机验证码登录功能 * 伪】
+- entity包下创建User（用户）实体类（可导入）
+- mapper包下创建UserMapper接口
+- service包下创建UserService接口，并在对应的impl包下创建UserServiceImpl实现类
+- controller包下创建UserController类
+- 创建utils包，并导入SMSUnit、ValidateCodeUtils工具类（资料中导入）
+- 在UserController中创建sendMsg方法，实现验证码的发送
+- 在login.js中加入sendMsg方法，并在login.html中加入调用该方法发送验证码的代码
+- 完成该方法后启动测试，输入手机号后点击发送验证码，后端可以正确生成验证码，并提交给前端，证明该方法有效
+- 在UserController中创建login方法，实现用户登录
+- 测试用户登录返回的代码时，发现只提交给后端 phone字段，而没有提交验证码，故需要在前端代码中添加验证码的提交：
+    front/page/login.html:
+    ...
+    const res = await loginApi({phone:this.form.phone,code:this.form.code/*此处加入code，否则前端只提交phone一个参数*/})
+    ...
+
+- 添加上述代码后再次测试，发现前端返回的map包含了phone和code两个字段，输入生成的code后点击登录可以跳转到主页（/front/index.html），
+    说明登录方法有效
+
+
+2023/05/24
+-【移动端相关业务（菜品展示、购物车、下单）】
+-【导入用户地址簿（这部分代码23号已完成，但因为还没写好登录方法，所以放到24号测试）】
+- 在entity包下创建AddressBook实体类（可从项目资料中导入）
+- 在mapper包下创建AddressBookMapper接口
+- 在service包下创建AddressBookService接口，并在对应的impl包下创建AddressBookServiceImpl实现类
+- 在controller包下创建AddressBookController类
+- 在AddressBookController类中创建save、setDefault和list方法，分别实现新建用户地址、设置默认地址和展示当前用户地址列表的功能
+- 完成后进行测试，可以实现用户信息的新建，说明save方法有效；可以实现用户地址的展示，说明list方法有效；可以实现用户默认地址的设置，
+    （设置默认地址后数据库中相应数据的is_default字段变为1）说明setDefault方法有效
+
+-【实现菜品展示功能】
+    代码交互过程：
+    1.页面（/front/index.html）发送ajax请求，获取分类数据（菜品和套餐分类）
+    2.页面发送ajax请求，获取第一个分类下的菜品或套餐
+    注意：首页完成加载后，还发送了一次ajax请求用于加载购物车数据，由于还未完成购物车功能相关代码，可以先将/front/main.js中的
+    cartListApi方法中的url路径改为：‘/front/cartData.json’，并在/front目录下新建一个cartData.json文件，写入json数据，
+    等后续代码完成后再改回来
+
+- 修改Dish中的list方法，加入口味信息，解决前端不显示菜品口味信息的问题
+- 修改后再次测试，前端点击 选择规格 按钮可以弹出菜品口味信息，同时前端页面获取的相应json数据中flavors字段：
+    {
+    	"code": 1,
+    	"msg": null,
+    	"data": [{
+    		"id": "1397851668262465537",
+    		"name": "口味蛇",
+    		[...省略...]
+    		"flavors": [{
+    			"id": "1397851668283437058",
+    			"dishId": 1397851668262465537,
+    			"name": "温度",
+    			"value": "[\"热饮\",\"常温\",\"去冰\",\"少冰\",\"多冰\"]",
+    			"createTime": "2021-05-27 09:46:23",
+    			"updateTime": "2021-05-27 09:46:23",
+    			"createUser": "1",
+    			"updateUser": "1"
+    		}],
+    		"categoryName": "湘菜",
+    		"copies": null
+    	},
+    ，说明该方法有效
+
+
+2023/05/25
+- 在SetmealController中创建list方法，实现套餐的展示功能
+- 完成方法后进行测试，前端页面可以正确展示套餐信息，后端控制台返回结果：
+    2023-05-25 09:53:20.765  INFO 21568 --- [nio-8080-exec-8] c.i.reggie.filter.LoginCheckFilter       : 用户已登录，id为：1661304308341174273
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2ab68031] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@58bc3a3] will not be managed by Spring
+    ==>  Preparing: SELECT id,category_id,name,price,status,code,description,image,create_time,update_time,create_user,update_user,is_deleted FROM setmeal WHERE (category_id = ? AND status = ?) ORDER BY update_time DESC
+    ==> Parameters: 1413342269393674242(Long), 1(Integer)
+    <==    Columns: id, category_id, name, price, status, code, description, image, create_time, update_time, create_user, update_user, is_deleted
+    <==        Row: 1659454431420317697, 1413342269393674242, 水煮鱼套餐 甲, 15500.00, 1, , 原料选新鲜生猛活鱼，又充分发挥辣椒御寒、益气养血功效，烹调出来的肉质一点也不会变韧，口感滑嫩，油而不腻。既去除了鱼的腥味，又保持了鱼的鲜嫩。满目的辣椒红亮养眼，辣而不燥，麻而不苦。, 891ea761-efce-42e6-bfbb-b941d268c372.jpg, 2023-05-19 15:02:22, 2023-05-19 15:02:22, 1, 1, 0
+    <==        Row: 1659453868699910146, 1413342269393674242, 红烧肉套餐 乙, 7500.00, 1, , 成菜后，色泽红亮，肉香味浓，无油腻感。因在烧制过程中加入了少许辣椒，所以味道甜中带咸、咸中有辣、甜而不腻, 8a5ffe6f-3c20-40d5-95c9-6b0ef6130fe2.jpg, 2023-05-19 15:00:08, 2023-05-19 15:00:08, 1, 1, 0
+    <==        Row: 1659453703599521794, 1413342269393674242, 红烧肉套餐 甲, 7500.00, 1, , 成菜后，色泽红亮，肉香味浓，无油腻感。因在烧制过程中加入了少许辣椒，所以味道甜中带咸、咸中有辣、甜而不腻, af066260-1382-46b8-a9e4-cc4d8241b941.jpg, 2023-05-19 14:59:29, 2023-05-19 14:59:29, 1, 1, 0
+    <==      Total: 3
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2ab68031]
+
+    即查询到了对应的套餐信息，说明该方法有效
+
+-【购物车功能实现】
+- 在eneity包下创建ShoppingCart实体类（可导入）
+- 在mapper包下创建ShoppingCartMapper接口，实现购物车功能
+- 在service包下创建ShoppingCartService接口，实现购物车功能，同时在impl包下创建对应的ShoppingCartServiceImpl实现类
+- 在controller包下创建ShoppingCartController类，实现购物车功能
+    【购物车功能 - 添加】
+- 在ShoppingCartController类中创建add方法，实现添加购物车功能
+- 完成方法后进行测试，发现前端添加菜品/套餐后可以正常返回，控制台可获取输出的sql语句，数据库也正确获得了对应的数据，说明该方法有效
+    【购物车功能 - 展示】
+- 在ShoppingCartController类中创建list方法，实现购物车列表展示功能
+- 完成后进行测试，发现前端页面可以正确展示购物车列表（包括已选择的菜品），控制台可获取输出的sql语句，
+    控制台输入：
+    Creating a new SqlSession
+    SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5ecd5d0b] was not registered for synchronization because synchronization is not active
+    JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@2af5f0cc] will not be managed by Spring
+    ==>  Preparing: SELECT id,name,user_id,dish_id,setmeal_id,dish_flavor,number,amount,image,create_time FROM shopping_cart WHERE (user_id = ?) ORDER BY create_time DESC
+    ==> Parameters: 1661304308341174273(Long)
+    <==    Columns: id, name, user_id, dish_id, setmeal_id, dish_flavor, number, amount, image, create_time
+    <==        Row: 1661572245023109121, 至臻广式白切鸡, 1661304308341174273, 1658752591019921409, null, 不要葱,不辣, 2, 59.98, 4d897450-dbe2-4fd1-bbd8-a41bc78f5082.jpeg, null
+    <==        Row: 1661573953874833409, 水煮鱼套餐 甲, 1661304308341174273, null, 1659454431420317697, null, 1, 155.00, 891ea761-efce-42e6-bfbb-b941d268c372.jpg, null
+    <==      Total: 2
+    （选择了两份“至臻广式白切鸡”和一份“水煮鱼套餐”）
+
+    数据库也正确获得了对应的数据，说明该方法有效
+
+    【购物车功能 - 清空】
+- 在ShoppingCartController类中创建clean方法，实现清空购物车功能
+- 完成后进行测试，发现前端页面可以正确清空购物车，控制台可获取输出的sql语句，数据库也正确获得了对应的数据，说明该方法有效
+
+    【购物车功能 - 修改（减一） 自研1.0】
+- 需求分析：在购物车中减少某一项菜品或套餐的数量，而不影响其他菜品或套餐的数量
+    传入的信息为dishId和setmealId，其中一项不为空另一项为空（同一时间只删除套餐或菜品），可以用shoppingCart对象来获取？
+    获取对应的shopppingCart.dishId或.setmealId后，先进行非空判断，不为空的那一项继续处理；
+    再使用querywrapper查询对应数据，若不为空则减一，否则报错
+- 在ShoppingCartController类中创建sub方法
+- 借鉴add方法中用dishId匹配对应信息，然后调用service.getOne方法获取对应的serviceOne对象，再获取One对象中的number值，并进行判断，
+    若不为0则减一，直接调用remove方法清除即可
+
+- 完成后进行测试，发现可以正常减少对应菜品或套餐的数量，控制台可获取输出的sql语句，数据库也正确获得了对应的数据，说明该方法有效
+
+- 【实现用户下单功能】
+    代码交互过程：
+    1.在购物车中点击 结算 按钮，页面转跳订单确认页面；
+    2.在订单确认页面中，发送ajax请求，请求服务端获取当前登录用户的默认地址；
+    3.在订单确认页面中，发送ajax请求，请求服务端获取当前登录用户的购物车数据；
+    4.在订单确认页面点击 支付 按钮，发送ajax请求，请求服务端完成下单操作；
+- 在entity包下新建Orders、OrderDetail实体类
+- 在mapper包下新建OrderMapper、OrderDetailMapper接口
+- 在service包下新建OrderService、OrderDetailService接口，同时在impl包下创建对应的实现类
+- 在controller包下新建OrdersController、OrderDetailController类，实现下单功能
+
+
+2023/05/26】
+- 在OrdersController中创建submit方法，实现下单功能
+- 完成方法后进行测试，前端可以正常下单，后端控制台返回数据正常，数据库对应表中获得了对应订单数据，说明该方法有效
+
+-【实现后端页面分页查询方法 迫真自研 1.0】
+- 在ordersController中创建一个page方法，实现后端中最后一个功能：订单列表展示
+    前端返回数据节选：
+    [
+        请求网址:http://localhost:8080/order/page?page=1&pageSize=10&number=123456789&beginTime=2023-05-01%2000%3A00%3A00&endTime=2023-05-31%2023%3A59%3A59
+        请求方法:GET
+        载荷：
+        [
+            page: 1
+            pageSize: 10
+            number: 123456789（*注：只有当输入查询订单号时才有该字段）
+            beginTime: 2023-05-01 00:00:00
+            endTime: 2023-05-31 23:59:59（*注：只有当选择起始时间才有该字段）
+        ]
+    ]
+
+- 完成方法后进行测试，发现前端页面除了用户名外均可正常展示，但user表中没有用户名，添加后反而报错，故暂不添加，且不使用联表查询，
+    除此之外展示信息正确，说明该方法有效
+
+- 至此，该项目基本功能已全部搭建完毕
+
+第一阶段完成于：2023/05/26
